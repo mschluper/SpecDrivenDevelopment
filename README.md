@@ -1,5 +1,8 @@
-# SpecDrivenDevelopment
-An experiment in Spec-Driven Development
+# Spec-Driven Development
+An experiment in Spec-Driven Development using VS Code in Agent Mode (with Claude Sonnet 4).
+This is the repo used in [the corresponding YouTube video](https://www.youtube.com/watch?v=ex-HBo5t7IY).
+
+
 
 Prompts:
 
