@@ -1,0 +1,237 @@
+@page "/"
+@page "/dashboard"
+@using FamilyShoppingApp.Services
+@using FamilyShoppingApp.ViewModels
+@inject ShoppingService ShoppingService
+@inject ProductService ProductService
+@inject ExceptionHandlerService ExceptionHandler
+
+<PageTitle>Dashboard</PageTitle>
+
+<h1>Shopping Dashboard</h1>
+
+@if (showAddForm)
+{
+    <div class="card mb-4" data-testid="add-product-form">
+        <div class="card-header">
+            <h5>Add Product to Shopping List</h5>
+        </div>
+        <div class="card-body">
+            <form @onsubmit="HandleAddProduct" @onsubmit:preventDefault="true">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="productSelect" class="form-label">Product *</label>
+                        <select id="productSelect" 
+                                class="form-select @(IsProductValid ? "is-valid" : (hasProductBeenTouched ? "is-invalid" : ""))"
+                                value="@viewModel.SelectedProductId" 
+                                @onchange="OnProductChanged"
+                                data-testid="product-select">
+                            <option value="0">Select a product...</option>
+                            @foreach (var product in viewModel.AvailableProducts)
+                            {
+                                <option value="@product.Id">@product.Name</option>
+                            }
+                        </select>
+                        @if (hasProductBeenTouched && !IsProductValid)
+                        {
+                            <div class="invalid-feedback">
+                                Please select a product.
+                            </div>
+                        }
+                    </div>
+                    <div class="col-md-3">
+                        <label for="quantityInput" class="form-label">Quantity *</label>
+                        <input id="quantityInput" 
+                               type="number" 
+                               class="form-control @(IsQuantityValid ? "is-valid" : (hasQuantityBeenTouched ? "is-invalid" : ""))"
+                               value="@viewModel.SelectedQuantity" 
+                               min="1"
+                               @onchange="OnQuantityChanged"
+                               data-testid="quantity-input" />
+                        @if (hasQuantityBeenTouched && !IsQuantityValid)
+                        {
+                            <div class="invalid-feedback">
+                                Quantity must be at least 1.
+                            </div>
+                        }
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" 
+                                class="btn btn-primary me-2" 
+                                disabled="@(!IsFormValid)"
+                                data-testid="add-to-list-button">
+                            Add to List
+                        </button>
+                        <button type="button" 
+                                class="btn btn-secondary" 
+                                @onclick="CancelAdd"
+                                data-testid="cancel-add-button">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+else
+{
+    <div class="mb-3">
+        <button class="btn btn-primary me-2" 
+                @onclick="ShowAddForm"
+                data-testid="show-add-form-button">
+            Add Product to Shopping List
+        </button>
+        @if (viewModel.HasPurchasedItems)
+        {
+            <button class="btn btn-outline-danger" 
+                    @onclick="ClearPurchased"
+                    data-testid="clear-purchased-button">
+                Clear Purchased Items
+            </button>
+        }
+    </div>
+}
+
+@if (viewModel.ShoppingItems.Any())
+{
+    <div class="card" data-testid="shopping-list">
+        <div class="card-header">
+            <h5>Shopping List</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Notes</th>
+                            <th>Quantity</th>
+                            <th>Store Availability</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in viewModel.ShoppingItems)
+                        {
+                            <tr class="@(item.IsPurchased ? "table-success" : "")" data-testid="shopping-item-row">
+                                <td>
+                                    @if (item.IsPurchased)
+                                    {
+                                        <s>@item.ProductName</s>
+                                        <span class="badge bg-success ms-2">Purchased</span>
+                                    }
+                                    else
+                                    {
+                                        @item.ProductName
+                                    }
+                                </td>
+                                <td>@item.ProductNotes</td>
+                                <td>
+                                    @if (!item.IsPurchased)
+                                    {
+                                        <div class="d-flex align-items-center">
+                                            <button class="btn btn-sm btn-outline-secondary" 
+                                                    @onclick="() => DecrementQuantity(item.Id)"
+                                                    data-testid="decrement-button">
+                                                -
+                                            </button>
+                                            <span class="mx-2" data-testid="quantity-display">@item.Quantity</span>
+                                            <button class="btn btn-sm btn-outline-secondary" 
+                                                    @onclick="() => IncrementQuantity(item.Id)"
+                                                    data-testid="increment-button">
+                                                +
+                                            </button>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span data-testid="quantity-display">@item.Quantity</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.AvailableStoreIds.Any())
+                                    {
+                                        var availableStores = viewModel.StoreAvailability
+                                            .Where(s => item.AvailableStoreIds.Contains(s.StoreId))
+                                            .Select(s => s.StoreName);
+                                        <span class="text-success" data-testid="store-availability">
+                                            @string.Join(", ", availableStores)
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger" data-testid="store-availability">Not available in any store</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!item.IsPurchased)
+                                    {
+                                        <button class="btn btn-sm btn-success me-2" 
+                                                @onclick="() => MarkAsPurchased(item.Id)"
+                                                data-testid="mark-purchased-button">
+                                            Mark Purchased
+                                        </button>
+                                    }
+                                    <button class="btn btn-sm btn-outline-danger" 
+                                            @onclick="() => RemoveItem(item.Id)"
+                                            data-testid="remove-item-button">
+                                        Remove
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <th colspan="5">Store Coverage Analysis</th>
+                        </tr>
+                        @foreach (var store in viewModel.StoreAvailability)
+                        {
+                            <tr data-testid="store-coverage-row">
+                                <td><strong>@store.StoreName</strong></td>
+                                <td colspan="2">
+                                    @store.AvailableItemsCount of @store.TotalItemsCount items available
+                                </td>
+                                <td colspan="2">
+                                    <div class="progress">
+                                        <div class="progress-bar @(store.CoveragePercentage >= 75 ? "bg-success" : store.CoveragePercentage >= 50 ? "bg-warning" : "bg-danger")" 
+                                             role="progressbar" 
+                                             style="width: @store.CoveragePercentage%"
+                                             data-testid="coverage-bar">
+                                            @store.CoveragePercentage%
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+else if (!showAddForm)
+{
+    <div class="alert alert-info" data-testid="empty-shopping-list-message">
+        Your shopping list is empty. Click "Add Product to Shopping List" to get started.
+    </div>
+}
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6>Quick Links</h6>
+            </div>
+            <div class="card-body">
+                <a href="/products" class="btn btn-outline-primary me-2" data-testid="products-link">
+                    Manage Products
+                </a>
+                <a href="/stores" class="btn btn-outline-secondary" data-testid="stores-link">
+                    Manage Stores
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

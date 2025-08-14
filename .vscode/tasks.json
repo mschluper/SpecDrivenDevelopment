@@ -1,0 +1,20 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"args": [
+				"run",
+				"--project",
+				"src/FamilyShoppingApp/FamilyShoppingApp.csproj"
+			],
+			"command": "dotnet",
+			"group": "build",
+			"isBackground": true,
+			"label": "Run Application",
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"type": "shell"
+		}
+	]
+}
