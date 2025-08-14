@@ -15,3 +15,13 @@ Verify that all requirements are met.
 3. Now implement Increment 2 as defined in file roadmap.md.
 
 4. Now implement Increment 3 as defined in file roadmap.md.
+
+
+## How to reproduce the generation of code?
+
+1. git clone https://github.com/mschluper/SpecDrivenDevelopment
+2. cd SpecDrivenDevelopment
+3. rm -rf src
+4. rm -r tests
+5. Open *Copilot Chat* and give it the first prompt
+6. See the magic happen (with a few confirmation clicks)
