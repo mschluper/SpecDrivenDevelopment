@@ -1,4 +1,4 @@
-namespace SpecDrivenDevelopment2.Services
+namespace SpecDrivenDevelopment.Services
 {
     public interface IUserContextService
     {

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
-using SpecDrivenDevelopment2.Services;
+using SpecDrivenDevelopment.Services;
 
-namespace SpecDrivenDevelopment2.Components.Layout
+namespace SpecDrivenDevelopment.Components.Layout
 {
     public partial class MainLayout
     {

@@ -1,5 +1,5 @@
-using SpecDrivenDevelopment2.Components;
-using SpecDrivenDevelopment2.Services;
+using SpecDrivenDevelopment.Components;
+using SpecDrivenDevelopment.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

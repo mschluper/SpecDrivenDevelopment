@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Components;
 
-namespace SpecDrivenDevelopment2.Components.Pages
+namespace SpecDrivenDevelopment.Components.Pages
 {
     public partial class Error : ComponentBase
     {
