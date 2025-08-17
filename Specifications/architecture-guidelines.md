@@ -7,3 +7,5 @@
 - Use a ViewModel for each page
 - Use @onchange instead of @bind for data binding
 - Implement Entity Framework migrations for database schema changes
+- Make sure each Model entity has LastModifiedDate and LastModifiedBy properties
+- Use UserContextService to get the current user's identity
