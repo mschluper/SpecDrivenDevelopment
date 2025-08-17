@@ -1,4 +1,5 @@
 ## Testing Guidelines
+- Create tests in a separate VS Studio Project, in folders called Pages and Services
 - Use bUnit for Blazor component testing
 - Use WaitForAssertion instead of Task.Delay to ensure state has changed before an assertion check
 - Use in-memory database for unit test isolation
